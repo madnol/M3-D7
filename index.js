@@ -1,92 +1,162 @@
+let drowpdownLinks = document.querySelectorAll(".dropdown-menu a");
+let actionBtn = document.querySelector(".input-group-prepend .btn");
+let filterInput = document.querySelector(".input-group input[type='text']");
+filterInput.placeholder = "Filter by name";
+
+for (let i = 0; i < drowpdownLinks.length; i++) {
+  drowpdownLinks[i].onclick = () => {
+    actionBtn.innerText = drowpdownLinks[i].innerText;
+    filterInput.placeholder =
+      "Filter by " + drowpdownLinks[i].innerText.toLowerCase();
+  };
+}
+
 const userCard = (userInfo) => {
-    return `<div class="card mb-3">
-      <div class="card-header" id="card1">
-        Name : ${userInfo.name}
-      </div>
-      <div class="card-header" id="card2" style="display:none">
-        Username : ${userInfo.username}
-      </div>
-      <div class="card-header" id="card3" style="display:none">
-        Email : ${userInfo.email}
-      </div>
-      <ul class="list-group list-group-flush">
-        <li class="list-group-item">Adress: ${userInfo.address.street},${userInfo.address.suite},${userInfo.address.city}(${userInfo.address.zipcode})</li>
-        <li class="list-group-item">Phone: ${userInfo.phone}</li>
-        <li class="list-group-item">Company: ${userInfo.company.name}</li>
-        <li class="list-group-item">Website: ${userInfo.website}</li>
-      </ul>
-    </div>`;
-  };
-  
-  let query = "";
-  
-  const handleSearchQuery = (event) => {
-    query = event.target.value;
-  };
-  
-  const fetchUsers = async (q = query) => {
-    try {
-      let response = await fetch("https://jsonplaceholder.typicode.com/users");
-  
-      let users = await response.json();
-      console.log(users);
-      let row = document.querySelector(".row");
-      let user = [];
-  
-      user = users.filter((res) => res.name === q);
-  
-      users.forEach((element) => {
-        let col = document.createElement("div");
-        col.classList.add("col-12", "col-md-6", "col-lg-4");
-  
-        col.innerHTML = userCard(element);
-  
-        row.appendChild(col);
-      });
-    } catch {}
-  };
-  
-  let drowpdownLinks = document.querySelectorAll(".dropdown-menu a");
-  
-  const card = function () {
-    let cardheader = document.querySelectorAll("#card1");
-    let cardheader1 = document.querySelectorAll("#card2");
-    let cardheader2 = document.querySelectorAll("#card3");
-    for (let i = 0; i < cardheader.length; i++) {
-      if (cardheader[i].style.display === "none") {
-        cardheader[i].style.display = "block";
-        cardheader1[i].style.display = "none";
-        cardheader2[i].style.display = "none";
+  return `<div class="card mb-3">
+    <div class="card-header text-info" onclick=(openUser(${userInfo.id})) >
+      Name: ${userInfo.name}
+    </div>
+    <div class="card-header text-danger"  >
+      Username: ${userInfo.username}
+    </div>
+    <div class="card-header text-success"  >
+      Email: ${userInfo.email}
+    </div>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">Adress: ${Object.values(
+        userInfo.address
+      ).join(", ")}</li>
+      <li class="list-group-item">Phone: ${userInfo.phone}</li>
+      <li class="list-group-item">Company: ${userInfo.company.name}</li>
+      <li class="list-group-item">Website: ${userInfo.website}</li>
+    </ul>
+  </div>`;
+};
+
+let query = "";
+
+const handleSearchQuery = (event) => {
+  query = event.target.value.toLowerCase();
+};
+
+const fetchUsers = async () => {
+  try {
+    let response = await fetch("https://jsonplaceholder.typicode.com/users");
+
+    let users = await response.json();
+
+    nameArray(users);
+    addressArray(users);
+
+    let row = document.querySelector(".row");
+
+    if (query !== "") {
+      if (actionBtn.innerText === "Name") {
+        user = users.filter((res) => res.name.toLowerCase().includes(query));
+      } else if (actionBtn.innerText === "Username") {
+        user = users.filter((res) =>
+          res.username.toLowerCase().includes(query)
+        );
+      } else {
+        user = users.filter((res) => res.email.toLowerCase().includes(query));
       }
+    } else {
+      user = [...users];
     }
-  };
-  
-  const card1 = function () {
-    let cardheader = document.querySelectorAll("#card1");
-    let cardheader1 = document.querySelectorAll("#card2");
-    let cardheader2 = document.querySelectorAll("#card3");
-    for (let i = 0; i < cardheader1.length; i++) {
-      if (cardheader1[i].style.display === "none") {
-        cardheader1[i].style.display = "block";
-        cardheader[i].style.display = "none";
-        cardheader2[i].style.display = "none";
-      }
+
+    row.innerHTML = "";
+
+    user.forEach((element) => {
+      delete element.address.geo;
+      let col = document.createElement("div");
+      col.classList.add("col-12", "col-md-6", "col-lg-4");
+
+      col.innerHTML = userCard(element);
+
+      row.appendChild(col);
+    });
+  } catch {
+    (err) => console.log(err);
+  }
+};
+
+window.onload = () => {
+  fetchUsers();
+};
+
+const addressArray = (address) => {
+  addressArr = address.map((res) => res.address);
+  for (let i = 0; i < addressArr.length; i++) {
+    addressArr[i] = Object.values(addressArr[i]).join(", ");
+  }
+};
+
+const nameArray = (names) => {
+  nameArr = names.map((res) => res.name);
+};
+
+let addressArr = [];
+
+let nameArr = [];
+
+let sortedUsers = [];
+
+let user = [];
+
+const sortAsc = () => {
+  user.sort(function (a, b) {
+    var nameA = a.name.toUpperCase(); // ignore upper and lowercase
+    var nameB = b.name.toUpperCase(); // ignore upper and lowercase
+    if (nameA < nameB) {
+      return -1;
     }
-  };
-  
-  const card2 = function () {
-    let cardheader = document.querySelectorAll("#card1");
-    let cardheader1 = document.querySelectorAll("#card2");
-    let cardheader2 = document.querySelectorAll("#card3");
-    for (let i = 0; i < cardheader2.length; i++) {
-      if (cardheader1[i].style.display === "none") {
-        cardheader2[i].style.display = "block";
-        cardheader1[i].style.display = "none";
-        cardheader[i].style.display = "none";
-      }
+    if (nameA > nameB) {
+      return 1;
     }
-  };
-  
-  window.onload = () => {
-    fetchUsers();
-  };
+
+    // names must be equal
+    return 0;
+  });
+};
+
+const sortDesc = () => {
+  user.sort(function (a, b) {
+    var nameA = a.name.toUpperCase(); // ignore upper and lowercase
+    var nameB = b.name.toUpperCase(); // ignore upper and lowercase
+    if (nameA < nameB) {
+      return 1;
+    }
+    if (nameA > nameB) {
+      return -1;
+    }
+
+    // names must be equal
+    return 0;
+  });
+};
+
+document.querySelectorAll(".input-group .btn")[2].onclick = function (e) {
+  let node = e.currentTarget;
+  if (node.className.includes("manuel")) {
+    sortAsc();
+    node.className = node.className.replace("manuel", "ermal");
+  } else {
+    sortDesc();
+    node.className = node.className.replace("ermal", "manuel");
+  }
+  let row = document.querySelector(".row");
+  row.innerHTML = "";
+  user.forEach((element) => {
+    let col = document.createElement("div");
+    col.classList.add("col-12", "col-md-6", "col-lg-4");
+
+    col.innerHTML = userCard(element);
+
+    row.appendChild(col);
+  });
+};
+
+const openUser = (id) => {
+  window.open("user.html?id=" + id);
+  console.log("user id_____________", id);
+};
